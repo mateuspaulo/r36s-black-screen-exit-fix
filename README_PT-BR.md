@@ -98,10 +98,12 @@ Todos os scripts estão na pasta [`tools/`](./tools/) e foram desenvolvidos para
 
 ### Passo 2: Executar a Correção no R36S
 1. Ejete o cartão com segurança e insira-o no R36S.
-2. Ligue o console e vá no menu **Tools** (ou **Opções**).
-3. *(Opcional)* Execute primeiro o **`Test_Power_Cycle`** para ver o aparelho dormir e acordar sozinho na sua frente.
-4. Execute o **`Fix_Black_Screen_Exit`**.
-5. O console exibirá as etapas na tela e reiniciará automaticamente em 5 segundos.
+2. Ligue o console.
+3. Na tela inicial principal (EmulationStation), pressione o botão **Start** para abrir o menu principal.
+4. Navegue até **Options**, depois entre em **Tools**.
+5. *(Opcional)* Selecione e execute **`Test_Power_Cycle`** para ver o aparelho dormir e acordar sozinho na sua frente.
+6. Selecione e execute o script **`Fix_Black_Screen_Exit`**.
+7. O console exibirá as etapas na tela e reiniciará automaticamente em 5 segundos.
 
 ### Passo 3: Testar
 1. Entre em qualquer jogo.

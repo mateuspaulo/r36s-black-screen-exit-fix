@@ -98,10 +98,12 @@ All scripts are located in the [`tools/`](./tools/) directory and are designed t
 
 ### Step 2: Run the Fix in the R36S
 1. Eject the microSD card safely and insert it back into the R36S.
-2. Turn on the console and go to the **Tools** (or **Options**) menu.
-3. *(Optional)* Select **`Test_Power_Cycle`** to see the console sleep and wake up on its own.
-4. Select and run **`Fix_Black_Screen_Exit`**.
-5. The console will display the installation steps on screen and automatically reboot in 5 seconds.
+2. Turn on the console.
+3. On the main home screen (EmulationStation), press the **Start** button to open the Main Menu.
+4. Navigate to **Options**, then select **Tools**.
+5. *(Optional)* Select and run **`Test_Power_Cycle`** to see the console sleep and wake up on its own.
+6. Select and run **`Fix_Black_Screen_Exit`**.
+7. The console will display the installation steps on screen and automatically reboot in 5 seconds.
 
 ### Step 3: Test
 1. Launch any game.
