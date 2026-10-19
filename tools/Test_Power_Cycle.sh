@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
-# Teste de Simulacao do Botao Power (Sleep e Wake Automatico via RTC)
-# dArkOSRE-R36
+# Test: Simulate Power Button (Automatic Sleep and Wake via Hardware RTC)
+# Target: R36S on dArkOSRE-R36 / ArkOS
 # ==============================================================================
 
 exec > /dev/tty1 2>&1
@@ -9,17 +9,17 @@ printf "\033[?25l"
 clear
 
 echo "=================================================="
-echo "    TESTE: SIMULAR BOTAO POWER (AUTO SLEEP/WAKE)  "
+echo "   TEST: POWER BUTTON SIMULATION (AUTO SLEEP/WAKE)"
 echo "=================================================="
 echo ""
-echo "Este teste vai colocar o console em modo de espera"
-echo "e acorda-lo sozinho apos 1 segundo, exatamente"
-echo "como se voce apertasse o botao Power duas vezes."
+echo "This test puts the console into sleep mode and"
+echo "wakes it up automatically after 1 second, exactly"
+echo "like pressing the physical Power button twice."
 echo ""
-echo "Iniciando em 3 segundos..."
+echo "Starting in 3 seconds..."
 sleep 3
 
-echo "Dormindo agora..."
+echo "Entering sleep now..."
 
 if command -v rtcwake >/dev/null 2>&1; then
     sudo rtcwake -m mem -s 1 2>/dev/null || sudo rtcwake -m freeze -s 1 2>/dev/null
@@ -31,12 +31,12 @@ fi
 
 clear
 echo "=================================================="
-echo "   SUCESSO! O CONSOLE ACORDOU AUTOMATICAMENTE!    "
+echo "   SUCCESS! CONSOLE WOKE UP AUTOMATICALLY!        "
 echo "=================================================="
 echo ""
-echo "Se voce esta lendo esta mensagem com a tela acesa,"
-echo "a simulacao do botao Power funcionou com perfeicao!"
+echo "If you are reading this message with the screen on,"
+echo "the hardware power cycle simulation worked properly!"
 echo ""
-echo "Retornando ao menu em 5 segundos..."
+echo "Returning to menu in 5 seconds..."
 sleep 5
 exit 0

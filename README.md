@@ -84,9 +84,9 @@ All scripts are located in the [`tools/`](./tools/) directory and are designed t
 
 | Script | Purpose |
 |---|---|
-| **`Corrigir_Tela_Preta_Start_Select.sh`** | **The Main Fix:** Creates automated backups and installs the auto power-cycle routine into `/usr/local/bin/perfnorm`. |
-| **`Testar_Simulacao_Power.sh`** | **Standalone Test:** Simulates the 1-second sleep/wake cycle without launching or exiting any games. |
-| **`Restaurar_Padrao_Start_Select.sh`** | **Complete Rollback:** Restores all original factory backup files (`.orig`) if you ever want to revert. |
+| **`Fix_Black_Screen_Exit.sh`** | **The Main Fix:** Creates automated backups and installs the auto power-cycle routine into `/usr/local/bin/perfnorm`. |
+| **`Test_Power_Cycle.sh`** | **Standalone Test:** Simulates the 1-second sleep/wake cycle without launching or exiting any games. |
+| **`Restore_Factory_Defaults.sh`** | **Complete Rollback:** Restores all original factory backup files (`.orig`) if you ever want to revert. |
 
 ---
 
@@ -99,8 +99,8 @@ All scripts are located in the [`tools/`](./tools/) directory and are designed t
 ### Step 2: Run the Fix in the R36S
 1. Eject the microSD card safely and insert it back into the R36S.
 2. Turn on the console and go to the **Tools** (or **Options**) menu.
-3. *(Optional)* Select **`Testar_Simulacao_Power`** to see the console sleep and wake up on its own.
-4. Select and run **`Corrigir_Tela_Preta_Start_Select`**.
+3. *(Optional)* Select **`Test_Power_Cycle`** to see the console sleep and wake up on its own.
+4. Select and run **`Fix_Black_Screen_Exit`**.
 5. The console will display the installation steps on screen and automatically reboot in 5 seconds.
 
 ### Step 3: Test
@@ -112,8 +112,8 @@ All scripts are located in the [`tools/`](./tools/) directory and are designed t
 
 ## Safety & Rollback
 
-- **Non-Destructive:** Before modifying any file, `Corrigir_Tela_Preta_Start_Select.sh` saves `.orig` backups of `perfnorm`, `perfmax`, and RetroArch configs into `/roms/backup/start_select_backup/`.
-- **Easy Reversion:** If you ever wish to undo the changes, simply run **`Restaurar_Padrao_Start_Select`** from the Tools menu.
+- **Non-Destructive:** Before modifying any file, `Fix_Black_Screen_Exit.sh` saves `.orig` backups of `perfnorm`, `perfmax`, and RetroArch configs into `/roms/backup/start_select_backup/`.
+- **Easy Reversion:** If you ever wish to undo the changes, simply run **`Restore_Factory_Defaults`** from the Tools menu.
 
 ---
 

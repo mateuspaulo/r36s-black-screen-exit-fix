@@ -84,9 +84,9 @@ Todos os scripts estão na pasta [`tools/`](./tools/) e foram desenvolvidos para
 
 | Script | Finalidade |
 |---|---|
-| **`Corrigir_Tela_Preta_Start_Select.sh`** | **A Correção Principal:** Cria backups automáticos e instala o Auto Power-Cycle no `/usr/local/bin/perfnorm`. |
-| **`Testar_Simulacao_Power.sh`** | **Teste Isolado:** Testa o ciclo de dormir e acordar sozinho em 1 segundo sem precisar abrir jogos. |
-| **`Restaurar_Padrao_Start_Select.sh`** | **Restauração Completa:** Restaura todos os arquivos originais de fábrica (`.orig`) caso deseje desfazer tudo. |
+| **`Fix_Black_Screen_Exit.sh`** | **A Correção Principal:** Cria backups automáticos e instala o Auto Power-Cycle no `/usr/local/bin/perfnorm`. |
+| **`Test_Power_Cycle.sh`** | **Teste Isolado:** Testa o ciclo de dormir e acordar sozinho em 1 segundo sem precisar abrir jogos. |
+| **`Restore_Factory_Defaults.sh`** | **Restauração Completa:** Restaura todos os arquivos originais de fábrica (`.orig`) caso deseje desfazer tudo. |
 
 ---
 
@@ -99,8 +99,8 @@ Todos os scripts estão na pasta [`tools/`](./tools/) e foram desenvolvidos para
 ### Passo 2: Executar a Correção no R36S
 1. Ejete o cartão com segurança e insira-o no R36S.
 2. Ligue o console e vá no menu **Tools** (ou **Opções**).
-3. *(Opcional)* Execute primeiro o **`Testar_Simulacao_Power`** para ver o aparelho dormir e acordar sozinho na sua frente.
-4. Execute o **`Corrigir_Tela_Preta_Start_Select`**.
+3. *(Opcional)* Execute primeiro o **`Test_Power_Cycle`** para ver o aparelho dormir e acordar sozinho na sua frente.
+4. Execute o **`Fix_Black_Screen_Exit`**.
 5. O console exibirá as etapas na tela e reiniciará automaticamente em 5 segundos.
 
 ### Passo 3: Testar
@@ -112,8 +112,8 @@ Todos os scripts estão na pasta [`tools/`](./tools/) e foram desenvolvidos para
 
 ## Segurança e Reversibilidade
 
-- **Não-Destrutivo:** Antes de alterar qualquer linha, o script salva backups `.orig` de todos os arquivos modificados em `/roms/backup/start_select_backup/`.
-- **Desfazer a Qualquer Momento:** Basta executar **`Restaurar_Padrao_Start_Select`** pelo menu Tools para reverter o sistema ao estado original.
+- **Não-Destrutivo:** Antes de alterar qualquer linha, o script `Fix_Black_Screen_Exit.sh` salva backups `.orig` de todos os arquivos modificados em `/roms/backup/start_select_backup/`.
+- **Desfazer a Qualquer Momento:** Basta executar **`Restore_Factory_Defaults`** pelo menu Tools para reverter o sistema ao estado original.
 
 ---
 
