@@ -55,10 +55,13 @@ Through deep code inspection of kernel device trees, logs, and OS scripts, here 
 
 Whenever you exit a game, the system executes the script `/usr/local/bin/perfnorm` before returning to EmulationStation.
 
-This fix automates the power-cycle wake-up sequence inside `perfnorm` using the **Linux Real-Time Clock (RTC) Hardware Wakealarm**:
+This fix automates the power-cycle wake-up sequence inside `perfnorm` using the **Linux Real-Time Clock (RTC) Hardware Wakealarm**, while also preserving your audio mixer volume:
 
 ```bash
-# Automated Power-Cycle Simulation via Hardware RTC
+# 1. Capture current volume before sleep (hardware reset defaults to 100%)
+cur_vol=$(amixer -c 0 -M sget 'Playback' 2>/dev/null | grep -o '[0-9]\+%' | head -1)
+
+# 2. Automated Power-Cycle Simulation via Hardware RTC
 if command -v rtcwake >/dev/null 2>&1; then
     sudo rtcwake -m mem -s 1 2>/dev/null || sudo rtcwake -m freeze -s 1 2>/dev/null
 else
@@ -66,15 +69,24 @@ else
     echo +1 > /sys/class/rtc/rtc0/wakealarm 2>/dev/null
     echo mem > /sys/power/state 2>/dev/null
 fi
+
+# 3. Restore audio volume and persist state across boots
+echo on > /sys/class/sound/card0/power/control 2>/dev/null || true
+if [ -n "$cur_vol" ]; then
+    amixer -c 0 -M sset 'Playback' "$cur_vol" 2>/dev/null || true
+    vol_num=$(echo "$cur_vol" | tr -d '%')
+    sed -i "s/^alsa_volume[ \t]*=.*/alsa_volume = $vol_num/" /etc/r36_config.ini 2>/dev/null || true
+fi
 ```
 
 ### The Sequence:
 1. You press `Start + Select` to quit a game.
-2. RetroArch exits.
-3. `perfnorm` automatically schedules an RTC wakealarm for **1 second** in the future and puts the SoC into sleep (`mem`).
+2. `perfnorm` records the exact audio volume you were using in-game.
+3. `perfnorm` schedules a hardware RTC wakealarm for **1 second** in the future and puts the SoC into sleep (`mem`).
 4. Exactly 1 second later, the hardware RTC alarm fires.
 5. The kernel executes `pm_resume`, re-initializing the MIPI-DSI transmitter and waking the LCD panel.
-6. The EmulationStation menu appears illuminated and ready—**no manual button presses required!**
+6. `perfnorm` restores the volume back to your in-game level (overriding the audio DAC's 100% hardware reset default) and saves it as the boot volume in `/etc/r36_config.ini`.
+7. The EmulationStation menu appears illuminated and ready with your chosen volume level—**no black screen and no ear-blasting 100% audio!**
 
 ---
 

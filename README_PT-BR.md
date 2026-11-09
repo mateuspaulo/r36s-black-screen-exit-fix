@@ -55,10 +55,13 @@ Por meio de inspeção aprofundada dos arquivos DTB (Device Tree Blob) do kernel
 
 Toda vez que você sai de um jogo, o sistema operacional roda automaticamente o script `/usr/local/bin/perfnorm` antes de voltar ao menu.
 
-Esta solução automatiza o ciclo do botão Power via hardware dentro do `perfnorm` utilizando o **Temporizador de Alarme em Tempo Real do Linux (RTC Wakealarm)**:
+Esta solução automatiza o ciclo do botão Power via hardware dentro do `perfnorm` utilizando o **Temporizador de Alarme em Tempo Real do Linux (RTC Wakealarm)** e agora preserva e sincroniza o volume de áudio:
 
 ```bash
-# Simulacao Automatica do Botao Power via RTC Hardware Wakealarm
+# 1. Capturar o volume atual antes do sleep (o reset de hardware restaura para 100%)
+cur_vol=$(amixer -c 0 -M sget 'Playback' 2>/dev/null | grep -o '[0-9]\+%' | head -1)
+
+# 2. Simulacao Automatica do Botao Power via RTC Hardware Wakealarm
 if command -v rtcwake >/dev/null 2>&1; then
     sudo rtcwake -m mem -s 1 2>/dev/null || sudo rtcwake -m freeze -s 1 2>/dev/null
 else
@@ -66,15 +69,24 @@ else
     echo +1 > /sys/class/rtc/rtc0/wakealarm 2>/dev/null
     echo mem > /sys/power/state 2>/dev/null
 fi
+
+# 3. Restaurar volume de audio e persistir entre inicializacoes
+echo on > /sys/class/sound/card0/power/control 2>/dev/null || true
+if [ -n "$cur_vol" ]; then
+    amixer -c 0 -M sset 'Playback' "$cur_vol" 2>/dev/null || true
+    vol_num=$(echo "$cur_vol" | tr -d '%')
+    sed -i "s/^alsa_volume[ \t]*=.*/alsa_volume = $vol_num/" /etc/r36_config.ini 2>/dev/null || true
+fi
 ```
 
 ### O Fluxo Automático:
 1. Você aperta `Start + Select` para sair de um jogo.
-2. O RetroArch fecha.
-3. O script `perfnorm` agenda um alarme de hardware para **1 segundo** no futuro e coloca o processador em modo de espera (`mem`).
+2. O `perfnorm` lê e memoriza o volume exato que você estava utilizando no jogo.
+3. O `perfnorm` agenda um alarme de hardware para **1 segundo** no futuro e coloca o processador em modo de espera (`mem`).
 4. Exatamente 1 segundo depois, o alarme de hardware do chip PMIC dispara.
-5. O kernel executa a rotina `pm_resume`, reinicializando eletricamente o transmissor DSI e ligando a tela LCD.
-6. O menu do EmulationStation reaparece aceso na sua frente — **sem você precisar apertar nenhum botão físico!**
+5. O kernel executa a rotina `pm_resume`, reinicializando o display LCD (resolvendo a tela preta).
+6. O `perfnorm` restaura o volume para o nível usado no jogo (evitando que o chip de áudio redefina para 100%) e salva em `/etc/r36_config.ini`.
+7. O menu do EmulationStation reaparece aceso e no volume exato que você estava usando — **sem tela preta e sem som estourando no máximo!**
 
 ---
 

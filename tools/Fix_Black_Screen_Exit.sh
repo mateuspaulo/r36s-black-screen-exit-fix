@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-# Fix: Automatic Display Power-Cycle Wake on Game Exit
+# Fix: Automatic Display Power-Cycle Wake on Game Exit + Volume Preservation
 # Target: R36S (SoySauce Y3506 / Clones) on dArkOSRE-R36 / ArkOS
 # ==============================================================================
 
@@ -9,7 +9,7 @@ printf "\033[?25l"
 clear
 
 echo "=================================================="
-echo "   FIX: R36S BLACK SCREEN ON EXIT (AUTO-WAKE)     "
+echo "   FIX: R36S SCREEN WAKE & VOLUME PRESERVATION    "
 echo "=================================================="
 echo ""
 
@@ -32,7 +32,7 @@ fi
 echo "  -> Backups saved to $BACKUP_DIR"
 
 echo ""
-echo "[2/4] Installing Auto Power-Cycle in perfnorm..."
+echo "[2/4] Installing Auto Power-Cycle & Volume Fix in perfnorm..."
 
 cat > /tmp/new_perfnorm << 'EOF'
 #!/bin/bash
@@ -60,7 +60,12 @@ if [ -x "/usr/local/bin/gamma" ]; then
   /usr/local/bin/gamma -s "$gamma_val" 2>/dev/null || true
 fi
 
-# 3. Simulate Power Button cycle via Hardware RTC Wakealarm
+# 3. Capture current volume BEFORE hardware sleep
+# (Power-cycle resets the audio DAC hardware registers to 100%)
+cur_vol=$(amixer -c 0 -M sget 'Playback' 2>/dev/null | grep -o '[0-9]\+%' | head -1)
+[ -z "$cur_vol" ] && cur_vol=$(amixer -c 0 sget 'Playback' 2>/dev/null | grep -o '[0-9]\+%' | head -1)
+
+# 4. Simulate Power Button cycle via Hardware RTC Wakealarm
 # Puts SoC into sleep for 1 second, then wakes up automatically.
 # This forces the kernel driver (pm_resume) to re-init MIPI-DSI and Backlight.
 if command -v rtcwake >/dev/null 2>&1; then
@@ -71,21 +76,46 @@ else
     echo mem > /sys/power/state 2>/dev/null
 fi
 
+# 5. Restore audio runtime power management and volume immediately after wake
+echo on > /sys/class/sound/card0/power/control 2>/dev/null || true
+if [ -z "$cur_vol" ] && [ -f "/etc/r36_config.ini" ]; then
+    saved_vol=$(grep '^alsa_volume[ \t]*=' /etc/r36_config.ini 2>/dev/null | cut -d'=' -f2 | xargs || true)
+    [ -n "$saved_vol" ] && cur_vol="${saved_vol}%"
+fi
+[ -z "$cur_vol" ] && cur_vol="40%"
+
+amixer -c 0 -M sset 'Playback' "$cur_vol" 2>/dev/null || amixer -c 0 sset 'Playback' "$cur_vol" 2>/dev/null || true
+
+# Persist last used volume to /etc/r36_config.ini so next boot retains this volume
+vol_num=$(echo "$cur_vol" | tr -d '%')
+if [ -f "/etc/r36_config.ini" ]; then
+    if grep -q '^alsa_volume[ \t]*=' /etc/r36_config.ini; then
+        sed -i "s/^alsa_volume[ \t]*=.*/alsa_volume = $vol_num/" /etc/r36_config.ini 2>/dev/null || true
+    else
+        echo "alsa_volume = $vol_num" >> /etc/r36_config.ini 2>/dev/null || true
+    fi
+fi
+alsactl store 0 2>/dev/null || true
+
 echo -en "\033[?25l" > /dev/tty1 2>/dev/null || true
 EOF
 
 sudo mv /tmp/new_perfnorm /usr/local/bin/perfnorm
 sudo chmod 755 /usr/local/bin/perfnorm
-echo "  -> perfnorm configured with Auto Power-Cycle."
+echo "  -> perfnorm configured with screen wake and audio preservation."
 
 echo ""
-echo "[3/4] Patching perfmax..."
-if [ -f "/usr/local/bin/perfmax" ]; then
-    sudo sed -i 's|printf "\\033c" >> /dev/tty1|echo -en "\\033[?25l" > /dev/tty1 2>/dev/null \|\| true|g' /usr/local/bin/perfmax
-    sudo sed -i 's|printf "\\033c" > /dev/tty1|echo -en "\\033[?25l" > /dev/tty1 2>/dev/null \|\| true|g' /usr/local/bin/perfmax
-    sudo sed -i 's|continue|:|g' /usr/local/bin/perfmax
-    sudo chmod 755 /usr/local/bin/perfmax
-    echo "  -> perfmax updated."
+echo "[3/4] Initializing boot volume in /etc/r36_config.ini..."
+if [ -f "/etc/r36_config.ini" ]; then
+    if ! grep -q '^alsa_volume[ \t]*=' /etc/r36_config.ini; then
+        cur_sys_vol=$(amixer -c 0 -M sget 'Playback' 2>/dev/null | grep -o '[0-9]\+%' | head -1 | tr -d '%')
+        [ -z "$cur_sys_vol" ] && cur_sys_vol="40"
+        echo "alsa_volume = $cur_sys_vol" >> /etc/r36_config.ini
+        echo "  -> Boot volume set to ${cur_sys_vol}%"
+    else
+        cur_boot_vol=$(grep '^alsa_volume[ \t]*=' /etc/r36_config.ini | cut -d'=' -f2 | xargs)
+        echo "  -> Existing boot volume kept at ${cur_boot_vol}%"
+    fi
 fi
 
 echo ""
@@ -97,7 +127,7 @@ for cfg in /home/ark/.config/retroarch/retroarch.cfg /home/ark/.config/retroarch
         chown ark:ark "$cfg" 2>/dev/null || true
     fi
 done
-echo "  -> RetroArch configs updated."
+echo "  -> RetroArch configs verified."
 
 sync
 
